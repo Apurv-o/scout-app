@@ -149,7 +149,7 @@ export default function Page() {
           </p>
         </section>
 
-        <KeyPanel connected={connected} onChange={setConnected} />
+        <KeyPanel />
 
         <SearchConsole
           filters={filters}
