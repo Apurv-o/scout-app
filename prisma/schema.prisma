@@ -1,0 +1,42 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Singleton row (id is always 1) holding the encrypted YouTube API key.
+model Setting {
+  id                     Int      @id @default(1)
+  youtubeApiKeyEncrypted String?
+  updatedAt              DateTime @updatedAt
+}
+
+// Log of every search run, kept for later reference / debugging quota use.
+model SearchHistory {
+  id             String    @id @default(cuid())
+  query          String
+  duration       String?
+  sortOrder      String?
+  safeSearch     String?
+  publishedAfter DateTime?
+  resultCount    Int
+  createdAt      DateTime  @default(now())
+}
+
+// Videos the user has bookmarked. Backs the "saved library" panel and
+// gives "Find similar" something to seed a new search from later.
+model SavedVideo {
+  id              String    @id @default(cuid())
+  videoId         String    @unique
+  title           String
+  channelTitle    String
+  thumbnailUrl    String
+  durationSeconds Int
+  durationLabel   String
+  viewCount       BigInt?
+  publishedAt     DateTime?
+  savedAt         DateTime  @default(now())
+}
