@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Clock from "@/components/Clock";
-import KeyPanel from "@/components/KeyPanel";
 import SearchConsole from "@/components/SearchConsole";
 import ResultsGrid from "@/components/ResultsGrid";
 import PreviewModal from "@/components/PreviewModal";
@@ -147,11 +146,9 @@ export default function Page() {
             Describe it in your own words — the topic, a detail you remember, roughly how long it was — and Scout
             searches YouTube directly, filtered exactly the way you specify.
           </p>
-        </section>
+       </section>
 
-        <KeyPanel />
-
-        <SearchConsole
+<SearchConsole
           filters={filters}
           onFiltersChange={setFilters}
           onSearch={() => runSearch(true)}
