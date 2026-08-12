@@ -17,21 +17,32 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "EMPTY_QUERY", message: "Describe the video first." }, { status: 400 });
   }
 
-  const setting = await prisma.setting.findUnique({ where: { id: 1 } });
-  if (!setting?.youtubeApiKeyEncrypted) {
+  const configuredApiKey = process.env.YOUTUBE_API_KEY?.trim();
+  let apiKey = configuredApiKey;
+
+  if (!apiKey) {
+    const setting = await prisma.setting.findUnique({ where: { id: 1 } });
+    if (!setting?.youtubeApiKeyEncrypted) {
+      return NextResponse.json(
+        { error: "NO_KEY", message: "Connect a YouTube API key first." },
+        { status: 400 }
+      );
+    }
+
+    try {
+      apiKey = decrypt(setting.youtubeApiKeyEncrypted);
+    } catch {
+      return NextResponse.json(
+        { error: "KEY_ERROR", message: "The stored key could not be read. Reconnect it." },
+        { status: 500 }
+      );
+    }
+  }
+
+  if (!apiKey) {
     return NextResponse.json(
       { error: "NO_KEY", message: "Connect a YouTube API key first." },
       { status: 400 }
-    );
-  }
-
-  let apiKey: string;
-  try {
-    apiKey = decrypt(setting.youtubeApiKeyEncrypted);
-  } catch {
-    return NextResponse.json(
-      { error: "KEY_ERROR", message: "The stored key could not be read. Reconnect it." },
-      { status: 500 }
     );
   }
 
@@ -63,16 +74,20 @@ export async function POST(req: NextRequest) {
       };
     });
 
-    await prisma.searchHistory.create({
-      data: {
-        query,
-        duration: body.duration ?? null,
-        sortOrder: body.order ?? null,
-        safeSearch: body.safeSearch ?? null,
-        publishedAfter: body.publishedAfter ? new Date(body.publishedAfter) : null,
-        resultCount: results.length,
-      },
-    });
+    try {
+      await prisma.searchHistory.create({
+        data: {
+          query,
+          duration: body.duration ?? null,
+          sortOrder: body.order ?? null,
+          safeSearch: body.safeSearch ?? null,
+          publishedAfter: body.publishedAfter ? new Date(body.publishedAfter) : null,
+          resultCount: results.length,
+        },
+      });
+    } catch (err) {
+      console.error("Could not save search history", err);
+    }
 
     return NextResponse.json({ results, nextPageToken: nextPageToken ?? null });
   } catch (err) {
