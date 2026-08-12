@@ -9,9 +9,13 @@ import {
 } from "@/lib/youtube";
 import type { VideoResult } from "@/types/video";
 
+const SAFE_SEARCH_VALUES = new Set(["none", "moderate", "strict"]);
+
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const query: string | undefined = body?.query?.trim();
+  const safeSearch = SAFE_SEARCH_VALUES.has(body?.safeSearch) ? body.safeSearch : "none";
+  const regionCode = typeof body?.regionCode === "string" ? body.regionCode : "worldwide";
 
   if (!query) {
     return NextResponse.json({ error: "EMPTY_QUERY", message: "Describe the video first." }, { status: 400 });
@@ -51,7 +55,8 @@ export async function POST(req: NextRequest) {
       query,
       duration: body.duration,
       order: body.order,
-      safeSearch: body.safeSearch,
+      safeSearch,
+      regionCode,
       publishedAfter: body.publishedAfter,
       pageToken: body.pageToken,
     });
@@ -80,7 +85,7 @@ export async function POST(req: NextRequest) {
           query,
           duration: body.duration ?? null,
           sortOrder: body.order ?? null,
-          safeSearch: body.safeSearch ?? null,
+          safeSearch,
           publishedAfter: body.publishedAfter ? new Date(body.publishedAfter) : null,
           resultCount: results.length,
         },

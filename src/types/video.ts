@@ -13,6 +13,7 @@ export interface SearchFilters {
   query: string;
   duration: "any" | "short" | "medium" | "long";
   order: "relevance" | "date" | "viewCount" | "rating" | "title";
-  safeSearch: "moderate" | "strict";
+  safeSearch: "none" | "moderate" | "strict";
+  regionCode: "worldwide" | string;
   publishedAfter?: string;
 }

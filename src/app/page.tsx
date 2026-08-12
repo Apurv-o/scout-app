@@ -12,7 +12,8 @@ const DEFAULT_FILTERS: SearchFilters = {
   query: "",
   duration: "any",
   order: "relevance",
-  safeSearch: "moderate",
+  safeSearch: "none",
+  regionCode: "worldwide",
   publishedAfter: undefined,
 };
 

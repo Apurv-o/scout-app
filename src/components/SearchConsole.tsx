@@ -77,8 +77,35 @@ export default function SearchConsole({ filters, onFiltersChange, onSearch, load
             value={filters.safeSearch}
             onChange={(e) => update("safeSearch", e.target.value as SearchFilters["safeSearch"])}
           >
+            <option value="none">Unfiltered</option>
             <option value="moderate">Moderate</option>
             <option value="strict">Strict</option>
+          </select>
+        </div>
+
+        <div className="ctrl">
+          <label className="ctrl-label" htmlFor="region">
+            Reach
+          </label>
+          <select
+            id="region"
+            className="field"
+            value={filters.regionCode}
+            onChange={(e) => update("regionCode", e.target.value as SearchFilters["regionCode"])}
+          >
+            <option value="worldwide">Worldwide</option>
+            <option value="US">United States</option>
+            <option value="IN">India</option>
+            <option value="GB">United Kingdom</option>
+            <option value="CA">Canada</option>
+            <option value="AU">Australia</option>
+            <option value="BR">Brazil</option>
+            <option value="DE">Germany</option>
+            <option value="FR">France</option>
+            <option value="JP">Japan</option>
+            <option value="KR">South Korea</option>
+            <option value="MX">Mexico</option>
+            <option value="ID">Indonesia</option>
           </select>
         </div>
 

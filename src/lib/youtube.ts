@@ -5,7 +5,8 @@ export interface YouTubeSearchParams {
   query: string;
   duration?: "any" | "short" | "medium" | "long";
   order?: "relevance" | "date" | "viewCount" | "rating" | "title";
-  safeSearch?: "moderate" | "strict";
+  safeSearch?: "none" | "moderate" | "strict";
+  regionCode?: string;
   publishedAfter?: string; // ISO date, e.g. 2026-01-01
   pageToken?: string;
 }
@@ -45,11 +46,14 @@ export async function searchVideos(apiKey: string, params: YouTubeSearchParams) 
     key: apiKey,
     part: "snippet",
     type: "video",
-    maxResults: "12",
+    maxResults: "50",
     q: params.query,
     order: params.order ?? "relevance",
-    safeSearch: params.safeSearch ?? "moderate",
+    safeSearch: params.safeSearch ?? "none",
   };
+  if (params.regionCode && params.regionCode !== "worldwide") {
+    query.regionCode = params.regionCode;
+  }
   if (params.duration && params.duration !== "any") {
     query.videoDuration = params.duration;
   }
