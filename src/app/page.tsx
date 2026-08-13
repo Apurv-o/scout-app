@@ -178,7 +178,7 @@ export default function Page() {
           by this app.
         </p>
         <p style={{ fontSize: "11px", color: "var(--text-faint)" }}>
-          Made by Apurv & Hemraj
+          Made by <a href="https://www.linkedin.com/in/apurv-prasad-622067264/" style={{ color: "var(--amber)", textDecoration: "none" }}>Apurv</a> & Hemraj
         </p>
       </footer>
 
