@@ -6,7 +6,8 @@ import SearchConsole from "@/components/SearchConsole";
 import ResultsGrid from "@/components/ResultsGrid";
 import PreviewModal from "@/components/PreviewModal";
 import SavedVideos from "@/components/SavedVideos";
-import type { VideoResult, SearchFilters } from "@/types/video";
+import CloudBackground from "@/components/CloudBackground";
+import type { SearchFilters, VideoResult } from "@/types/video";
 
 const DEFAULT_FILTERS: SearchFilters = {
   query: "",
@@ -14,11 +15,11 @@ const DEFAULT_FILTERS: SearchFilters = {
   order: "relevance",
   safeSearch: "none",
   regionCode: "worldwide",
+  source: "all",
   publishedAfter: undefined,
 };
 
 export default function Page() {
-  const [connected, setConnected] = useState(false);
   const [filters, setFilters] = useState<SearchFilters>(DEFAULT_FILTERS);
   const [results, setResults] = useState<VideoResult[]>([]);
   const [nextPageToken, setNextPageToken] = useState<string | null>(null);
@@ -31,13 +32,6 @@ export default function Page() {
   const [savedRefreshKey, setSavedRefreshKey] = useState(0);
 
   useEffect(() => {
-    fetch("/api/settings")
-      .then((r) => r.json())
-      .then((d) => setConnected(Boolean(d.connected)))
-      .catch(() => {});
-  }, []);
-
-  useEffect(() => {
     fetch("/api/videos/saved")
       .then((r) => r.json())
       .then((d) => setSavedIds(new Set((d.results ?? []).map((v: VideoResult) => v.id))))
@@ -45,11 +39,7 @@ export default function Page() {
   }, [savedRefreshKey]);
 
   const runSearch = useCallback(
-    async (
-      reset: boolean,
-      overrideQuery?: string,
-      overrideDuration?: SearchFilters["duration"]
-    ) => {
+    async (reset: boolean, overrideQuery?: string, overrideDuration?: SearchFilters["duration"]) => {
       const activeFilters: SearchFilters = {
         ...filters,
         ...(overrideQuery !== undefined ? { query: overrideQuery } : {}),
@@ -59,10 +49,6 @@ export default function Page() {
         setFilters(activeFilters);
       }
 
-      if (!connected) {
-        setError("Connect a YouTube API key first.");
-        return;
-      }
       if (!activeFilters.query.trim()) {
         setError("Describe the video first.");
         return;
@@ -86,10 +72,13 @@ export default function Page() {
         }
 
         setResults((prev) => (reset ? data.results : [...prev, ...data.results]));
-        setNextPageToken(data.nextPageToken);
+        setNextPageToken(data.nextPageToken ?? null);
         setHasSearched(true);
+
         if (reset && data.results.length === 0) {
           setInfo("No matches on this frequency. Try loosening a filter or rephrasing the description.");
+        } else if (data.notices?.length) {
+          setInfo(data.notices.join(" "));
         }
       } catch {
         setError("Could not reach the search service.");
@@ -97,7 +86,7 @@ export default function Page() {
         setLoading(false);
       }
     },
-    [filters, connected, nextPageToken]
+    [filters, nextPageToken]
   );
 
   function handleFindSimilar(video: VideoResult) {
@@ -108,7 +97,7 @@ export default function Page() {
 
   async function toggleSave(video: VideoResult) {
     if (savedIds.has(video.id)) {
-      await fetch(`/api/videos/save?videoId=${video.id}`, { method: "DELETE" });
+      await fetch(`/api/videos/save?videoId=${encodeURIComponent(video.id)}`, { method: "DELETE" });
     } else {
       await fetch("/api/videos/save", {
         method: "POST",
@@ -121,6 +110,7 @@ export default function Page() {
 
   return (
     <>
+      <CloudBackground />
       <div className="sprockets" aria-hidden="true" />
       <header className="masthead">
         <div className="masthead-row">
@@ -144,17 +134,12 @@ export default function Page() {
           </h1>
           <div className="hero-rule" />
           <p>
-            Describe it in your own words — the topic, a detail you remember, roughly how long it was — and Scout
-            searches YouTube directly, filtered exactly the way you specify.
+            Describe it in your own words - the topic, a detail you remember, roughly how long it was - and Scout
+            searches public video sources directly, filtered exactly the way you specify.
           </p>
-       </section>
+        </section>
 
-<SearchConsole
-          filters={filters}
-          onFiltersChange={setFilters}
-          onSearch={() => runSearch(true)}
-          loading={loading}
-        />
+        <SearchConsole filters={filters} onFiltersChange={setFilters} onSearch={() => runSearch(true)} loading={loading} />
 
         {(error || info) && (
           <div className={`status-line show ${error ? "error" : "info"}`} role="status" aria-live="polite">
@@ -164,9 +149,7 @@ export default function Page() {
 
         <section>
           {hasSearched && <div className="results-meta">Results for &quot;{filters.query}&quot;</div>}
-          {!hasSearched && (
-            <div className="empty-state">Nothing queued yet. Describe the video above and hit Search.</div>
-          )}
+          {!hasSearched && <div className="empty-state">Nothing queued yet. Describe the video above and hit Search.</div>}
           <ResultsGrid
             results={results}
             savedIds={savedIds}
@@ -190,8 +173,8 @@ export default function Page() {
       </main>
 
       <footer>
-        Scout queries the official YouTube Data API v3 using your own key — no video is hosted or rehosted by this
-        app. Results, thumbnails, and playback remain subject to YouTube&apos;s own terms and content policies.
+        Scout queries public video source APIs and opens playback on the original site. No video is hosted or rehosted
+        by this app.
       </footer>
 
       <PreviewModal video={previewVideo} onClose={() => setPreviewVideo(null)} />

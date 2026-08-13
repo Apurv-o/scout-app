@@ -9,7 +9,15 @@ export async function POST(req: NextRequest) {
 
   const saved = await prisma.savedVideo.upsert({
     where: { videoId: body.id },
-    update: {},
+    update: {
+      title: body.title ?? "",
+      channelTitle: body.channelTitle ?? "",
+      thumbnailUrl: body.thumbnailUrl ?? "",
+      durationSeconds: body.durationSeconds ?? 0,
+      durationLabel: body.durationLabel ?? "",
+      viewCount: body.viewCount ? BigInt(body.viewCount) : null,
+      publishedAt: body.publishedAt ? new Date(body.publishedAt) : null,
+    },
     create: {
       videoId: body.id,
       title: body.title ?? "",

@@ -24,7 +24,7 @@ export default function SavedVideos({ refreshKey, onPreview, onRemoved, onFindSi
   if (saved.length === 0) return null;
 
   async function remove(videoId: string) {
-    await fetch(`/api/videos/save?videoId=${videoId}`, { method: "DELETE" });
+    await fetch(`/api/videos/save?videoId=${encodeURIComponent(videoId)}`, { method: "DELETE" });
     onRemoved();
   }
 
@@ -40,10 +40,11 @@ export default function SavedVideos({ refreshKey, onPreview, onRemoved, onFindSi
               <span className="duration-badge">{video.durationLabel}</span>
             </div>
             <div className="card-body">
+              <div className="source-badge">{video.sourceLabel}</div>
               <div className="card-title">{video.title}</div>
               <div className="card-channel">{video.channelTitle}</div>
               <div className="card-stats">
-                {formatCount(video.viewCount)} views · {formatDate(video.publishedAt)}
+                {formatCount(video.viewCount)} views - {formatDate(video.publishedAt)}
               </div>
               <div className="card-actions">
                 <button className="btn btn-ghost" type="button" onClick={() => onPreview(video)}>
@@ -55,13 +56,8 @@ export default function SavedVideos({ refreshKey, onPreview, onRemoved, onFindSi
                 <button className="btn btn-ghost" type="button" onClick={() => remove(video.id)}>
                   Remove
                 </button>
-                <a
-                  className="btn btn-primary"
-                  href={`https://www.youtube.com/watch?v=${video.id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Open ↗
+                <a className="btn btn-primary" href={video.videoUrl} target="_blank" rel="noopener noreferrer">
+                  Open
                 </a>
               </div>
             </div>

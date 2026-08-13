@@ -18,6 +18,8 @@
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
+    "@frontman-ai/nextjs": "^1.0.4",
+    "@opentelemetry/sdk-node": "^0.221.0",
     "@types/node": "^20.14.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",

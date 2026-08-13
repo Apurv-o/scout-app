@@ -4,11 +4,18 @@ import { encrypt } from "@/lib/crypto";
 
 export async function GET() {
   if (process.env.YOUTUBE_API_KEY?.trim()) {
-    return NextResponse.json({ connected: true });
+    return NextResponse.json({ connected: true, youtubeConnected: true });
   }
 
-  const setting = await prisma.setting.findUnique({ where: { id: 1 } });
-  return NextResponse.json({ connected: Boolean(setting?.youtubeApiKeyEncrypted) });
+  try {
+    const setting = await prisma.setting.findUnique({ where: { id: 1 } });
+    return NextResponse.json({
+      connected: true,
+      youtubeConnected: Boolean(setting?.youtubeApiKeyEncrypted),
+    });
+  } catch {
+    return NextResponse.json({ connected: true, youtubeConnected: false });
+  }
 }
 
 export async function POST(req: NextRequest) {

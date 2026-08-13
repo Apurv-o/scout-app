@@ -33,6 +33,25 @@ export default function SearchConsole({ filters, onFiltersChange, onSearch, load
 
       <div className="filters">
         <div className="ctrl">
+          <label className="ctrl-label" htmlFor="source">
+            Source
+          </label>
+          <select
+            id="source"
+            className="field"
+            value={filters.source}
+            onChange={(e) => update("source", e.target.value as SearchFilters["source"])}
+          >
+            <option value="all">All public sites</option>
+            <option value="youtube">YouTube</option>
+            <option value="dailymotion">Dailymotion</option>
+            <option value="peertube">PeerTube</option>
+            <option value="archive">Internet Archive</option>
+            <option value="reddit">Reddit</option>
+          </select>
+        </div>
+
+        <div className="ctrl">
           <label className="ctrl-label" htmlFor="duration">
             Duration
           </label>
@@ -43,9 +62,9 @@ export default function SearchConsole({ filters, onFiltersChange, onSearch, load
             onChange={(e) => update("duration", e.target.value as SearchFilters["duration"])}
           >
             <option value="any">Any length</option>
-            <option value="short">Short — under 4 min</option>
-            <option value="medium">Medium — 4–20 min</option>
-            <option value="long">Long — over 20 min</option>
+            <option value="short">Short - under 4 min</option>
+            <option value="medium">Medium - 4-20 min</option>
+            <option value="long">Long - over 20 min</option>
           </select>
         </div>
 
@@ -63,7 +82,7 @@ export default function SearchConsole({ filters, onFiltersChange, onSearch, load
             <option value="date">Newest first</option>
             <option value="viewCount">Most viewed</option>
             <option value="rating">Highest rated</option>
-            <option value="title">Title (A–Z)</option>
+            <option value="title">Title (A-Z)</option>
           </select>
         </div>
 
@@ -128,7 +147,7 @@ export default function SearchConsole({ filters, onFiltersChange, onSearch, load
           Search
         </button>
         <span className={`scan-dot ${loading ? "active" : ""}`} aria-hidden="true" />
-        <span className="scan-label">{loading ? "Scanning…" : ""}</span>
+        <span className="scan-label">{loading ? "Scanning..." : ""}</span>
       </div>
     </section>
   );

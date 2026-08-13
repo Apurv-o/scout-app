@@ -1,5 +1,15 @@
+export type VideoSource =
+  | "all"
+  | "youtube"
+  | "dailymotion"
+  | "peertube"
+  | "archive"
+  | "reddit";
+
 export interface VideoResult {
   id: string;
+  source: Exclude<VideoSource, "all">;
+  sourceLabel: string;
   title: string;
   channelTitle: string;
   thumbnailUrl: string;
@@ -7,6 +17,8 @@ export interface VideoResult {
   durationLabel: string;
   viewCount: number;
   publishedAt: string;
+  videoUrl: string;
+  embedUrl?: string;
 }
 
 export interface SearchFilters {
@@ -15,5 +27,6 @@ export interface SearchFilters {
   order: "relevance" | "date" | "viewCount" | "rating" | "title";
   safeSearch: "none" | "moderate" | "strict";
   regionCode: "worldwide" | string;
+  source: VideoSource;
   publishedAfter?: string;
 }

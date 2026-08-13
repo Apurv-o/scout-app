@@ -28,19 +28,32 @@ export default function PreviewModal({ video, onClose }: PreviewModalProps) {
     >
       <div className="modal-box">
         <div className="modal-head">
-          <h3>{video.title}</h3>
+          <div>
+            <div className="source-badge modal-source">{video.sourceLabel}</div>
+            <h3>{video.title}</h3>
+          </div>
           <button className="modal-close" type="button" onClick={onClose} aria-label="Close preview">
             &times;
           </button>
         </div>
-        <div className="modal-frame-wrap">
-          <iframe
-            src={`https://www.youtube.com/embed/${video.id}?autoplay=1`}
-            title="Video preview"
-            allow="autoplay; encrypted-media"
-            allowFullScreen
-          />
-        </div>
+        {video.embedUrl ? (
+          <div className="modal-frame-wrap">
+            <iframe
+              src={video.embedUrl}
+              title="Video preview"
+              allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        ) : (
+          <div className="modal-fallback">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={video.thumbnailUrl} alt="" />
+            <a className="btn btn-primary" href={video.videoUrl} target="_blank" rel="noopener noreferrer">
+              Open
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );
