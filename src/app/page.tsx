@@ -172,9 +172,14 @@ export default function Page() {
         />
       </main>
 
-      <footer>
-        Scout queries public video source APIs and opens playback on the original site. No video is hosted or rehosted
-        by this app.
+      <footer style={{ textAlign: "center" }}>
+        <p style={{ maxWidth: "600px", margin: "0 auto 20px" }}>
+          Scout queries public video source APIs and opens playback on the original site. No video is hosted or rehosted
+          by this app.
+        </p>
+        <p style={{ fontSize: "11px", color: "var(--text-faint)" }}>
+          Made by Apurv & Hemraj
+        </p>
       </footer>
 
       <PreviewModal video={previewVideo} onClose={() => setPreviewVideo(null)} />
