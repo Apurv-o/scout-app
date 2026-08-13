@@ -31,6 +31,31 @@ export default function SearchConsole({ filters, onFiltersChange, onSearch, load
         />
       </div>
 
+      <div style={{ fontSize: "12px", color: "var(--text-faint)", marginBottom: "16px" }}>
+        Try:{" "}
+        {["that DIY floating shelf tutorial with walnut wood", "old street food video from Delhi", "funny dog skateboarding video"].map((ex) => (
+          <button
+            key={ex}
+            onClick={() => update("query", ex)}
+            style={{
+              background: "none",
+              border: "none",
+              color: "var(--amber)",
+              cursor: "pointer",
+              padding: "0 8px 0 0",
+              textDecoration: "underline",
+              fontSize: "12px",
+            }}
+          >
+            {ex}
+          </button>
+        ))}
+      </div>
+      
+      <div style={{ fontSize: "12px", color: "var(--text-faint)", marginBottom: "16px", fontStyle: "italic" }}>
+        Note: No video is hosted or rehosted by this app.
+      </div>
+
       <div className="filters">
         <div className="ctrl">
           <label className="ctrl-label" htmlFor="source">

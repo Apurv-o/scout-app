@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Scout – Video Finder",
-  description: "Search and filter videos on YouTube by your own criteria.",
+  title: "Scout – Multi-Source Video Search",
+  description: "Search and filter videos across multiple platforms including YouTube, Reddit, and Internet Archive using your own criteria.",
 };
 
 export default function RootLayout({
