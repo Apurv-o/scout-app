@@ -7,7 +7,6 @@ import ResultsGrid from "@/components/ResultsGrid";
 import PreviewModal from "@/components/PreviewModal";
 import SavedVideos from "@/components/SavedVideos";
 import CloudBackground from "@/components/CloudBackground";
-import KeyPanel from "@/components/KeyPanel";
 import type { SearchFilters, VideoResult } from "@/types/video";
 
 const DEFAULT_FILTERS: SearchFilters = {
@@ -145,8 +144,6 @@ export default function Page() {
         </section>
 
         <SearchConsole filters={filters} onFiltersChange={setFilters} onSearch={() => runSearch(true)} loading={loading} />
-
-        <KeyPanel refreshKey={savedRefreshKey} />
 
         {(error || info) && (
           <div className={`status-line show ${error ? "error" : "info"}`} role="status" aria-live="polite">
