@@ -83,6 +83,8 @@ async function fetchJson(url: URL, init?: RequestInit) {
   const res = await fetch(url, {
     ...init,
     cache: "no-store",
+    // One slow upstream (archive.org, Reddit) must not stall the whole search.
+    signal: AbortSignal.timeout(8000),
     headers: {
       Accept: "application/json",
       "User-Agent": "ScoutVideoFinder/1.0",
@@ -112,8 +114,10 @@ export async function searchAllSources(params: MultiSourceSearchParams): Promise
     return [];
   });
 
+  const deduped = results.filter((video, index) => results.findIndex((v) => v.id === video.id) === index);
+
   return {
-    results: sortResults(results, params.order),
+    results: sortResults(deduped, params.order),
     nextPageToken: params.source === "youtube" ? nextPageToken : null,
     notices,
   };
@@ -176,6 +180,7 @@ async function searchDailymotionSource(params: MultiSourceSearchParams) {
   url.searchParams.set("family_filter", params.safeSearch === "strict" ? "true" : "false");
   if (params.order === "date") url.searchParams.set("sort", "recent");
   if (params.order === "viewCount") url.searchParams.set("sort", "visited");
+  if (params.order === "rating") url.searchParams.set("sort", "rating");
 
   const data = await fetchJson(url);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -208,6 +213,7 @@ async function searchPeerTubeSource(params: MultiSourceSearchParams) {
   url.searchParams.set("nsfw", params.safeSearch === "strict" ? "false" : "both");
   if (params.order === "date") url.searchParams.set("sort", "-publishedAt");
   if (params.order === "viewCount") url.searchParams.set("sort", "-views");
+  if (params.order === "rating") url.searchParams.set("sort", "-likes");
 
   const data = await fetchJson(url);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -283,10 +289,16 @@ async function searchRedditSource(params: MultiSourceSearchParams) {
 
   const data = await fetchJson(url);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const results: VideoResult[] = (data.data?.children ?? []).map((child: any) => {
-    const post = child.data ?? {};
-    const id = String(post.id);
-    const thumbnail = usableRedditThumbnail(post.thumbnail) ?? post.preview?.images?.[0]?.source?.url;
+  const results: VideoResult[] = (data.data?.children ?? [])
+    // Link posts often point at articles or images; keep only playable videos.
+    .filter((child: any) => {
+      const post = child.data ?? {};
+      return Boolean(post.is_video || post.post_hint === "hosted:video" || post.secure_media?.reddit_video);
+    })
+    .map((child: any) => {
+      const post = child.data ?? {};
+      const id = String(post.id);
+      const thumbnail = usableRedditThumbnail(post.thumbnail) ?? decodeRedditUrl(post.preview?.images?.[0]?.source?.url);
     return {
       id: `reddit:${id}`,
       source: "reddit",
@@ -294,8 +306,10 @@ async function searchRedditSource(params: MultiSourceSearchParams) {
       title: post.title ?? "Untitled",
       channelTitle: post.subreddit_name_prefixed ?? "Reddit",
       thumbnailUrl: thumbnail ?? fallbackThumbnail("Reddit"),
-      durationSeconds: Number(post.media?.reddit_video?.duration ?? 0),
-      durationLabel: post.media?.reddit_video?.duration ? formatDuration(Number(post.media.reddit_video.duration)) : "--",
+      durationSeconds: Number(post.media?.reddit_video?.duration ?? post.secure_media?.reddit_video?.duration ?? 0),
+      durationLabel: (post.media?.reddit_video?.duration ?? post.secure_media?.reddit_video?.duration)
+        ? formatDuration(Number(post.media?.reddit_video?.duration ?? post.secure_media?.reddit_video?.duration))
+        : "--",
       viewCount: Number(post.ups ?? 0),
       publishedAt: toIsoDate(post.created_utc),
       videoUrl: post.permalink ? `https://www.reddit.com${post.permalink}` : `https://www.reddit.com/comments/${id}`,
@@ -310,4 +324,10 @@ function usableRedditThumbnail(value: unknown) {
   if (typeof value !== "string") return undefined;
   if (!value.startsWith("http")) return undefined;
   return value;
+}
+
+/** Reddit returns preview URLs HTML-escaped (&amp;) - decode so browsers can load them. */
+function decodeRedditUrl(value: unknown) {
+  if (typeof value !== "string") return undefined;
+  return value.replace(/&amp;/g, "&");
 }

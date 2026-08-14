@@ -6,14 +6,16 @@ import { formatCount, formatDate } from "@/lib/format";
 interface VideoCardProps {
   video: VideoResult;
   saved: boolean;
+  /** Position in the grid, used purely to stagger the entrance animation. */
+  index?: number;
   onPreview: (video: VideoResult) => void;
   onToggleSave: (video: VideoResult) => void;
   onFindSimilar: (video: VideoResult) => void;
 }
 
-export default function VideoCard({ video, saved, onPreview, onToggleSave, onFindSimilar }: VideoCardProps) {
+export default function VideoCard({ video, saved, index = 0, onPreview, onToggleSave, onFindSimilar }: VideoCardProps) {
   return (
-    <div className="card">
+    <div className="card" style={{ "--i": index } as React.CSSProperties}>
       <div className="thumb-wrap">
         {/* Thumbnails come from arbitrary source domains, so a plain img keeps this simple. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -21,7 +23,7 @@ export default function VideoCard({ video, saved, onPreview, onToggleSave, onFin
         <span className="duration-badge">{video.durationLabel}</span>
       </div>
       <div className="card-body">
-        <div className="source-badge">{video.sourceLabel}</div>
+        <div className="source-badge" data-source={video.source}>{video.sourceLabel}</div>
         <div className="card-title">{video.title}</div>
         <div className="card-channel">{video.channelTitle}</div>
         <div className="card-stats">

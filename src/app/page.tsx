@@ -7,6 +7,7 @@ import ResultsGrid from "@/components/ResultsGrid";
 import PreviewModal from "@/components/PreviewModal";
 import SavedVideos from "@/components/SavedVideos";
 import CloudBackground from "@/components/CloudBackground";
+import KeyPanel from "@/components/KeyPanel";
 import type { SearchFilters, VideoResult } from "@/types/video";
 
 const DEFAULT_FILTERS: SearchFilters = {
@@ -71,7 +72,11 @@ export default function Page() {
           return;
         }
 
-        setResults((prev) => (reset ? data.results : [...prev, ...data.results]));
+        setResults((prev) => {
+          if (reset) return data.results;
+          const seen = new Set(prev.map((v) => v.id));
+          return [...prev, ...data.results.filter((v: VideoResult) => !seen.has(v.id))];
+        });
         setNextPageToken(data.nextPageToken ?? null);
         setHasSearched(true);
 
@@ -141,6 +146,8 @@ export default function Page() {
 
         <SearchConsole filters={filters} onFiltersChange={setFilters} onSearch={() => runSearch(true)} loading={loading} />
 
+        <KeyPanel refreshKey={savedRefreshKey} />
+
         {(error || info) && (
           <div className={`status-line show ${error ? "error" : "info"}`} role="status" aria-live="polite">
             {error || info}
@@ -159,7 +166,7 @@ export default function Page() {
           />
           {nextPageToken && (
             <button className="btn btn-ghost load-more" type="button" onClick={() => runSearch(false)} disabled={loading}>
-              Load more results
+              {filters.source === "all" ? "Load more YouTube results" : "Load more results"}
             </button>
           )}
         </section>
@@ -172,13 +179,13 @@ export default function Page() {
         />
       </main>
 
-      <footer style={{ textAlign: "center" }}>
-        <p style={{ maxWidth: "600px", margin: "0 auto 20px" }}>
+      <footer className="site-footer">
+        <p className="footer-note">
           Scout queries public video source APIs and opens playback on the original site. No video is hosted or rehosted
           by this app.
         </p>
-        <p style={{ fontSize: "11px", color: "var(--text-faint)" }}>
-          Made by <a href="https://www.linkedin.com/in/apurv-prasad-622067264/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--amber)", textDecoration: "none" }}>Apurv</a> & <a href="https://www.linkedin.com/in/hemraj-patel-5319552ba/" target="_blank" rel="noopener noreferrer" style={{ color: "var(--amber)", textDecoration: "none" }}>Hemraj</a>
+        <p className="footer-credit">
+          Made by <a href="https://www.linkedin.com/in/apurv-prasad-622067264/" target="_blank" rel="noopener noreferrer">Apurv</a> & <a href="https://www.linkedin.com/in/hemraj-patel-5319552ba/" target="_blank" rel="noopener noreferrer">Hemraj</a>
         </p>
       </footer>
 

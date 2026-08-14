@@ -16,10 +16,11 @@ export default function ResultsGrid({ results, savedIds, onPreview, onToggleSave
 
   return (
     <div className="grid">
-      {results.map((video) => (
+      {results.map((video, index) => (
         <VideoCard
           key={video.id}
           video={video}
+          index={index % 24}
           saved={savedIds.has(video.id)}
           onPreview={onPreview}
           onToggleSave={onToggleSave}

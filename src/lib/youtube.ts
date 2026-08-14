@@ -58,7 +58,12 @@ export async function searchVideos(apiKey: string, params: YouTubeSearchParams) 
     query.videoDuration = params.duration;
   }
   if (params.publishedAfter) {
-    query.publishedAfter = params.publishedAfter;
+    // YouTube requires an RFC 3339 datetime; a bare date like "2026-01-01" is
+    // normalized to midnight UTC so the filter is applied predictably.
+    const parsed = new Date(params.publishedAfter);
+    if (!Number.isNaN(parsed.getTime())) {
+      query.publishedAfter = parsed.toISOString();
+    }
   }
   if (params.pageToken) {
     query.pageToken = params.pageToken;

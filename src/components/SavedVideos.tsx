@@ -32,15 +32,15 @@ export default function SavedVideos({ refreshKey, onPreview, onRemoved, onFindSi
     <section className="panel">
       <div className="panel-label">Saved library ({saved.length})</div>
       <div className="grid">
-        {saved.map((video) => (
-          <div className="card" key={video.id}>
+        {saved.map((video, index) => (
+          <div className="card" key={video.id} style={{ "--i": index % 24 } as React.CSSProperties}>
             <div className="thumb-wrap">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={video.thumbnailUrl} alt="" loading="lazy" />
               <span className="duration-badge">{video.durationLabel}</span>
             </div>
             <div className="card-body">
-              <div className="source-badge">{video.sourceLabel}</div>
+              <div className="source-badge" data-source={video.source}>{video.sourceLabel}</div>
               <div className="card-title">{video.title}</div>
               <div className="card-channel">{video.channelTitle}</div>
               <div className="card-stats">
