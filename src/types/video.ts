@@ -4,11 +4,7 @@ export type VideoSource =
   | "dailymotion"
   | "peertube"
   | "archive"
-  | "reddit"
-  | "dtube"
-  | "bitcchute"
-  | "odysee"
-  | "lbry";
+  | "reddit";
 
 export interface VideoResult {
   id: string;

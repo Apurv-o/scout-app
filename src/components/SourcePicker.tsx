@@ -14,10 +14,6 @@ const SOURCE_OPTIONS: SourceOption[] = [
   { value: "peertube",    label: "PeerTube" },
   { value: "archive",     label: "Internet Archive" },
   { value: "reddit",      label: "Reddit" },
-  { value: "dtube",       label: "D.Tube" },
-  { value: "bitcchute",   label: "BitChute" },
-  { value: "odysee",      label: "Odysee" },
-  { value: "lbry",        label: "LBRY" },
 ];
 
 const ALL_CONCRETE = SOURCE_OPTIONS.map((s) => s.value);

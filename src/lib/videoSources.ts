@@ -15,7 +15,7 @@ export interface MultiSourceSearchResult {
   notices: string[];
 }
 
-const PUBLIC_SOURCES: ConcreteSource[] = ["youtube", "dailymotion", "peertube", "archive", "reddit", "dtube", "bitcchute", "odysee", "lbry"];
+const PUBLIC_SOURCES: ConcreteSource[] = ["youtube", "dailymotion", "peertube", "archive", "reddit"];
 
 const ORDERED_SOURCE_WEIGHT: Record<ConcreteSource, number> = {
   youtube: 0,
@@ -23,10 +23,6 @@ const ORDERED_SOURCE_WEIGHT: Record<ConcreteSource, number> = {
   peertube: 2,
   archive: 3,
   reddit: 4,
-  dtube: 5,
-  bitcchute: 6,
-  odysee: 7,
-  lbry: 8,
 };
 
 function fallbackThumbnail(label: string) {
@@ -136,11 +132,6 @@ async function searchOneSource(source: ConcreteSource, params: MultiSourceSearch
   if (source === "dailymotion") return searchDailymotionSource(params);
   if (source === "peertube") return searchPeerTubeSource(params);
   if (source === "archive") return searchArchiveSource(params);
-  if (source === "reddit") return searchRedditSource(params);
-  if (source === "dtube") return searchDTubeSource(params);
-  if (source === "bitcchute") return searchBitChuteSource(params);
-  if (source === "odysee") return searchOdyseeSource(params);
-  if (source === "lbry") return searchLBRYSource(params);
   return searchRedditSource(params);
 }
 
@@ -346,131 +337,5 @@ function usableRedditThumbnail(value: unknown) {
 function decodeRedditUrl(value: unknown) {
   if (typeof value !== "string") return undefined;
   return value.replace(/&amp;/g, "&");
-}
-
-/* ---------- D.Tube ---------- */
-async function searchDTubeSource(params: MultiSourceSearchParams) {
-  const nodeUrl = process.env.DTUBE_NODE_URL ?? "https://api.dtube.io";
-  const url = new URL(`${nodeUrl}/search`);
-  url.searchParams.set("q", params.query);
-  url.searchParams.set("limit", "30");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const data = await fetchJson(url).catch(() => ({ videos: [] })) as any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const results: VideoResult[] = (data?.videos ?? []).map((item: any) => {
-    const id = `dtube:${item._id ?? item.link ?? item.permlink}`;
-    const seconds = Number(item.duration ?? 0);
-    return {
-      id,
-      source: "dtube" as const,
-      sourceLabel: "D.Tube",
-      title: item.title ?? item.json_metadata?.title ?? "Untitled",
-      channelTitle: item.author ?? "D.Tube",
-      thumbnailUrl: item.thumbnail ?? item.json_metadata?.thumbnail ?? fallbackThumbnail("D.Tube"),
-      durationSeconds: seconds,
-      durationLabel: seconds ? formatDuration(seconds) : "--",
-      viewCount: Number(item.views ?? 0),
-      publishedAt: toIsoDate(item.ts ?? item.created),
-      videoUrl: `https://d.tube/#!/v/${item.author}/${item.permlink ?? item.link}`,
-      embedUrl: `https://emb.d.tube/#/v/${item.author}/${item.permlink ?? item.link}`,
-    };
-  });
-  return { results: applySharedFilters(results, params), nextPageToken: null };
-}
-
-/* ---------- BitChute ---------- */
-async function searchBitChuteSource(params: MultiSourceSearchParams) {
-  const base = process.env.BITCHUTE_API_URL ?? "https://www.bitchute.com/api/search/list/";
-  const url = new URL(base);
-  url.searchParams.set("query", params.query);
-  url.searchParams.set("kind", "video");
-  url.searchParams.set("count", "30");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const data = await fetchJson(url).catch(() => ({ results: [] })) as any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const results: VideoResult[] = (data?.results ?? []).map((item: any) => {
-    const id = `bitcchute:${item.id ?? item.video_id}`;
-    const seconds = Number(item.duration_seconds ?? item.duration ?? 0);
-    return {
-      id,
-      source: "bitcchute" as const,
-      sourceLabel: "BitChute",
-      title: item.name ?? item.title ?? "Untitled",
-      channelTitle: item.channel?.name ?? item.owner ?? "BitChute",
-      thumbnailUrl: item.images?.thumbnail ?? item.thumbnail_url ?? fallbackThumbnail("BitChute"),
-      durationSeconds: seconds,
-      durationLabel: seconds ? formatDuration(seconds) : "--",
-      viewCount: Number(item.views ?? item.view_count ?? 0),
-      publishedAt: toIsoDate(item.published ?? item.date_published),
-      videoUrl: `https://www.bitchute.com/video/${item.id ?? item.video_id}/`,
-      embedUrl: `https://www.bitchute.com/embed/${item.id ?? item.video_id}/`,
-    };
-  });
-  return { results: applySharedFilters(results, params), nextPageToken: null };
-}
-
-/* ---------- Odysee ---------- */
-async function searchOdyseeSource(params: MultiSourceSearchParams) {
-  const url = new URL("https://api.odysee.com/api/v1/search");
-  url.searchParams.set("q", params.query);
-  url.searchParams.set("size", "30");
-  url.searchParams.set("type", "stream");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const data = await fetchJson(url).catch(() => []) as any;
-  const items = Array.isArray(data) ? data : (data?.items ?? []);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const results: VideoResult[] = items.map((item: any) => {
-    const claimId = item.claimId ?? item.claim_id ?? "";
-    const claimName = item.name ?? item.claim_name ?? claimId;
-    const seconds = Number(item.duration ?? 0);
-    return {
-      id: `odysee:${claimId}`,
-      source: "odysee" as const,
-      sourceLabel: "Odysee",
-      title: item.title ?? item.value?.title ?? "Untitled",
-      channelTitle: item.channel_name ?? item.value?.author ?? "Odysee",
-      thumbnailUrl: item.thumbnail_url ?? item.value?.thumbnail?.url ?? fallbackThumbnail("Odysee"),
-      durationSeconds: seconds,
-      durationLabel: seconds ? formatDuration(seconds) : "--",
-      viewCount: Number(item.view_count ?? 0),
-      publishedAt: toIsoDate(item.release_time ?? item.timestamp),
-      videoUrl: `https://odysee.com/${claimName}:${claimId}`,
-      embedUrl: `https://odysee.com/$/embed/${claimName}:${claimId}`,
-    };
-  });
-  return { results: applySharedFilters(results, params), nextPageToken: null };
-}
-
-/* ---------- LBRY ---------- */
-async function searchLBRYSource(params: MultiSourceSearchParams) {
-  const base = process.env.LBRY_API_URL ?? "https://lbry.tech/api/v1/search";
-  const url = new URL(base);
-  url.searchParams.set("query", params.query);
-  url.searchParams.set("page_size", "30");
-  url.searchParams.set("media", "video");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const data = await fetchJson(url).catch(() => []) as any;
-  const items = Array.isArray(data) ? data : (data?.items ?? []);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const results: VideoResult[] = items.map((item: any) => {
-    const claimId = item.claim_id ?? "";
-    const claimName = item.name ?? claimId;
-    const seconds = Number(item.duration ?? 0);
-    return {
-      id: `lbry:${claimId}`,
-      source: "lbry" as const,
-      sourceLabel: "LBRY",
-      title: item.title ?? item.value?.title ?? "Untitled",
-      channelTitle: item.channel_name ?? item.value?.author ?? "LBRY",
-      thumbnailUrl: item.thumbnail_url ?? item.value?.thumbnail?.url ?? fallbackThumbnail("LBRY"),
-      durationSeconds: seconds,
-      durationLabel: seconds ? formatDuration(seconds) : "--",
-      viewCount: Number(item.views ?? 0),
-      publishedAt: toIsoDate(item.release_time ?? item.timestamp),
-      videoUrl: `https://lbry.tv/${claimName}:${claimId}`,
-      embedUrl: `https://lbry.tv/$/embed/${claimName}:${claimId}`,
-    };
-  });
-  return { results: applySharedFilters(results, params), nextPageToken: null };
 }
 

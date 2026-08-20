@@ -5,7 +5,7 @@ import { searchAllSources } from "@/lib/videoSources";
 import type { VideoSource } from "@/types/video";
 
 const SAFE_SEARCH_VALUES = new Set(["none", "moderate", "strict"]);
-const VALID_SOURCES = new Set<VideoSource>(["all", "youtube", "dailymotion", "peertube", "archive", "reddit", "dtube", "bitcchute", "odysee", "lbry"]);
+const VALID_SOURCES = new Set<VideoSource>(["all", "youtube", "dailymotion", "peertube", "archive", "reddit"]);
 
 function parseSources(raw: unknown): VideoSource[] {
   const arr = Array.isArray(raw) ? raw : [raw];
