@@ -177,7 +177,7 @@ async function searchDailymotionSource(params: MultiSourceSearchParams) {
   url.searchParams.set("search", params.query);
   url.searchParams.set("limit", "30");
   url.searchParams.set("fields", "id,title,thumbnail_360_url,owner.screenname,duration,views_total,created_time,url");
-  url.searchParams.set("family_filter", params.safeSearch === "strict" ? "true" : "false");
+  url.searchParams.set("family_filter", params.safeSearch === "none" ? "false" : "true");
   if (params.order === "date") url.searchParams.set("sort", "recent");
   if (params.order === "viewCount") url.searchParams.set("sort", "visited");
   if (params.order === "rating") url.searchParams.set("sort", "rating");
@@ -210,7 +210,7 @@ async function searchPeerTubeSource(params: MultiSourceSearchParams) {
   const url = new URL("https://sepiasearch.org/api/v1/search/videos");
   url.searchParams.set("search", params.query);
   url.searchParams.set("count", "30");
-  url.searchParams.set("nsfw", params.safeSearch === "strict" ? "false" : "both");
+  url.searchParams.set("nsfw", params.safeSearch === "none" ? "both" : "false");
   if (params.order === "date") url.searchParams.set("sort", "-publishedAt");
   if (params.order === "viewCount") url.searchParams.set("sort", "-views");
   if (params.order === "rating") url.searchParams.set("sort", "-likes");
@@ -283,7 +283,7 @@ async function searchRedditSource(params: MultiSourceSearchParams) {
   url.searchParams.set("type", "link");
   url.searchParams.set("limit", "30");
   url.searchParams.set("raw_json", "1");
-  url.searchParams.set("include_over_18", params.safeSearch === "strict" ? "off" : "on");
+  url.searchParams.set("include_over_18", params.safeSearch === "none" ? "on" : "off");
   if (params.order === "date") url.searchParams.set("sort", "new");
   if (params.order === "viewCount" || params.order === "rating") url.searchParams.set("sort", "top");
 
@@ -293,6 +293,9 @@ async function searchRedditSource(params: MultiSourceSearchParams) {
     // Link posts often point at articles or images; keep only playable videos.
     .filter((child: any) => {
       const post = child.data ?? {};
+      if (params.safeSearch !== "none" && post.over_18) {
+        return false;
+      }
       return Boolean(post.is_video || post.post_hint === "hosted:video" || post.secure_media?.reddit_video);
     })
     .map((child: any) => {
