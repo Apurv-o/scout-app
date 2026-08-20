@@ -8,6 +8,10 @@ const SOURCE_LABELS: Record<StoredSource, string> = {
   peertube: "PeerTube",
   archive: "Internet Archive",
   reddit: "Reddit",
+  dtube: "D.Tube",
+  bitcchute: "BitChute",
+  odysee: "Odysee",
+  lbry: "LBRY",
 };
 
 export function getSourceLabel(source: StoredSource): string {
@@ -32,6 +36,18 @@ export function parseStoredVideoId(id: string): {
   }
   if (parts[0] === "peertube" && parts[1] && parts[2]) {
     return { source: "peertube", host: parts[1], rawId: parts[2], embedId: parts[3] };
+  }
+  if (parts[0] === "dtube" && parts[1]) {
+    return { source: "dtube", rawId: parts.slice(1).join(":") };
+  }
+  if (parts[0] === "bitcchute" && parts[1]) {
+    return { source: "bitcchute", rawId: parts[1] };
+  }
+  if (parts[0] === "odysee" && parts[1]) {
+    return { source: "odysee", rawId: parts.slice(1).join(":") };
+  }
+  if (parts[0] === "lbry" && parts[1]) {
+    return { source: "lbry", rawId: parts.slice(1).join(":") };
   }
   return { source: "youtube", rawId: id };
 }
