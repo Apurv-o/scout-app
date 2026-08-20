@@ -104,7 +104,7 @@ export default function SearchConsole({ filters, onFiltersChange, onSearch, load
 
         <div className="ctrl">
           <label className="ctrl-label" htmlFor="safe">
-            SafeSearch / NSFW filter
+            Content Filter
           </label>
           <select
             id="safe"
@@ -112,9 +112,9 @@ export default function SearchConsole({ filters, onFiltersChange, onSearch, load
             value={filters.safeSearch}
             onChange={(e) => update("safeSearch", e.target.value as SearchFilters["safeSearch"])}
           >
-            <option value="none">Off (Include NSFW)</option>
-            <option value="moderate">Moderate</option>
-            <option value="strict">Strict (Filter NSFW)</option>
+            <option value="none">Show All Content</option>
+            <option value="moderate">Standard Filter</option>
+            <option value="strict">Strict Filter</option>
           </select>
         </div>
 
