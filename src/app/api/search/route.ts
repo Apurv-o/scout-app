@@ -5,14 +5,21 @@ import { searchAllSources } from "@/lib/videoSources";
 import type { VideoSource } from "@/types/video";
 
 const SAFE_SEARCH_VALUES = new Set(["none", "moderate", "strict"]);
-const SOURCE_VALUES = new Set(["all", "youtube", "dailymotion", "peertube", "archive", "reddit"]);
+const VALID_SOURCES = new Set<VideoSource>(["all", "youtube", "dailymotion", "peertube", "archive", "reddit", "dtube", "bitcchute", "odysee", "lbry"]);
+
+function parseSources(raw: unknown): VideoSource[] {
+  const arr = Array.isArray(raw) ? raw : [raw];
+  const valid = arr.filter((s): s is VideoSource => typeof s === "string" && VALID_SOURCES.has(s as VideoSource));
+  return valid.length > 0 ? valid : ["all"];
+}
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   const query: string | undefined = body?.query?.trim();
   const safeSearch = SAFE_SEARCH_VALUES.has(body?.safeSearch) ? body.safeSearch : "none";
   const regionCode = typeof body?.regionCode === "string" ? body.regionCode : "worldwide";
-  const source: VideoSource = SOURCE_VALUES.has(body?.source) ? body.source : "all";
+  // Support both legacy `source` string and new `sources` array
+  const sources = parseSources(body?.sources ?? body?.source);
 
   if (!query) {
     return NextResponse.json({ error: "EMPTY_QUERY", message: "Describe the video first." }, { status: 400 });
@@ -39,7 +46,7 @@ export async function POST(req: NextRequest) {
       order: body.order,
       safeSearch,
       regionCode,
-      source,
+      sources,
       publishedAfter: body.publishedAfter,
       pageToken: body.pageToken,
       youtubeApiKey: apiKey,

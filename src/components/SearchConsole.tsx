@@ -1,6 +1,7 @@
 "use client";
 
 import type { SearchFilters } from "@/types/video";
+import SourcePicker from "@/components/SourcePicker";
 
 interface SearchConsoleProps {
   filters: SearchFilters;
@@ -49,22 +50,13 @@ export default function SearchConsole({ filters, onFiltersChange, onSearch, load
 
       <div className="filters">
         <div className="ctrl">
-          <label className="ctrl-label" htmlFor="source">
+          <label className="ctrl-label">
             Source
           </label>
-          <select
-            id="source"
-            className="field"
-            value={filters.source}
-            onChange={(e) => update("source", e.target.value as SearchFilters["source"])}
-          >
-            <option value="all">All public sites</option>
-            <option value="youtube">YouTube</option>
-            <option value="dailymotion">Dailymotion</option>
-            <option value="peertube">PeerTube</option>
-            <option value="archive">Internet Archive</option>
-            <option value="reddit">Reddit</option>
-          </select>
+          <SourcePicker
+            value={filters.sources}
+            onChange={(sources) => update("sources", sources)}
+          />
         </div>
 
         <div className="ctrl">

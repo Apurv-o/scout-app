@@ -31,6 +31,6 @@ export interface SearchFilters {
   order: "relevance" | "date" | "viewCount" | "rating" | "title";
   safeSearch: "none" | "moderate" | "strict";
   regionCode: "worldwide" | string;
-  source: VideoSource;
+  sources: VideoSource[];
   publishedAfter?: string;
 }

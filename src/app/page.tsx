@@ -15,7 +15,7 @@ const DEFAULT_FILTERS: SearchFilters = {
   order: "relevance",
   safeSearch: "none",
   regionCode: "worldwide",
-  source: "all",
+  sources: ["all"],
   publishedAfter: undefined,
 };
 
@@ -163,7 +163,9 @@ export default function Page() {
           />
           {nextPageToken && (
             <button className="btn btn-ghost load-more" type="button" onClick={() => runSearch(false)} disabled={loading}>
-              {filters.source === "all" ? "Load more YouTube results" : "Load more results"}
+              {filters.sources.includes("youtube") && !filters.sources.some(s => s !== "all" && s !== "youtube")
+                ? "Load more YouTube results"
+                : "Load more results"}
             </button>
           )}
         </section>

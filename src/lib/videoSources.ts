@@ -77,10 +77,14 @@ function sortResults(results: VideoResult[], order: SearchFilters["order"]) {
   });
 }
 
-function selectedSources(source: VideoSource, pageToken?: string): ConcreteSource[] {
-  if (source !== "all") return [source];
+function selectedSources(sources: VideoSource[], pageToken?: string): ConcreteSource[] {
+  // "load more" paging only works for YouTube
   if (pageToken) return ["youtube"];
-  return PUBLIC_SOURCES;
+  // If "all" is in the list, return all public sources
+  if (sources.includes("all")) return PUBLIC_SOURCES;
+  // Filter to concrete sources only (drop any stray "all") and deduplicate
+  const concrete = [...new Set(sources.filter((s): s is ConcreteSource => s !== "all"))] as ConcreteSource[];
+  return concrete.length > 0 ? concrete : PUBLIC_SOURCES;
 }
 
 async function fetchJson(url: URL, init?: RequestInit) {
@@ -102,7 +106,7 @@ async function fetchJson(url: URL, init?: RequestInit) {
 }
 
 export async function searchAllSources(params: MultiSourceSearchParams): Promise<MultiSourceSearchResult> {
-  const sources = selectedSources(params.source, params.pageToken);
+  const sources = selectedSources(params.sources, params.pageToken);
   const searches = sources.map((source) => searchOneSource(source, params));
   const settled = await Promise.allSettled(searches);
   const notices: string[] = [];
@@ -122,7 +126,7 @@ export async function searchAllSources(params: MultiSourceSearchParams): Promise
 
   return {
     results: sortResults(deduped, params.order),
-    nextPageToken: params.source === "youtube" ? nextPageToken : null,
+    nextPageToken: params.sources.includes("youtube") ? nextPageToken : null,
     notices,
   };
 }
