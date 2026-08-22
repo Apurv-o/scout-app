@@ -184,7 +184,7 @@ export default function Page() {
           by this app.
         </p>
         <p className="footer-credit">
-          Made by <a href="https://apurv-portfolio-gamma.vercel.app/" target="_blank" rel="noopener noreferrer">Apurv</a>
+          Made by <a href="https://bit.ly/4gsM1za" target="_blank" rel="noopener noreferrer">Apurv</a>
         </p>
       </footer>
 
